@@ -14,11 +14,11 @@ zig build
 
 On Ubuntu, install the [build dependencies](#ubuntu-dependencies) prior to building. The build downloads raylib as pinned in [build.zig.zon](build.zig.zon); you don't need a separate raylib installation.
 
-`zig build` installs the demo executable to `zig-out/bin/zetris-<os>-<arch>`. For example, the default build on x86_64 Linux produces `zig-out/bin/zetris-linux-x86_64`. OS and architecture names follow Zig's target names, such as `windows` and `aarch64`.
+`zig build` installs the demo executable to `zig-out/bin/zetris-<arch>-<os>-<abi>`. For example, the default build on x86_64 Linux produces `zig-out/bin/zetris-x86_64-linux-gnu`. Architecture, OS, and ABI names follow Zig's target names. macOS has no ABI, so its binaries use `none`.
 
-`zig build run` opens the game window and needs a working desktop display and graphics drivers. Builds and logic tests can run on a headless machine; use the [UI smoke test](#ui-smoke-test) and [audio smoke test](#audio-smoke-test) to exercise the demo there.
+`zig build run` opens the game window and needs a working desktop display and graphics drivers. Builds and logic tests can run on a headless machine using the [UI smoke test](#ui-smoke-test) and [audio smoke test](#audio-smoke-test).
 
-The build defaults to the baseline CPU for the target architecture. This avoids requiring the destination machine to support the build machine's AVX or AVX-512 instructions. Keep that default for binaries you distribute; `-Dcpu=native` is for binaries that will only run on the build machine.
+The build defaults to the baseline CPU for the target architecture. This avoids requiring the destination machine to support the build machine's AVX instructions. Keep that default for binaries you distribute; the `-Dcpu=native` target is for binaries that will only run on the build machine.
 
 ### Windows
 
@@ -28,17 +28,17 @@ Build for x86_64 Windows:
 zig build -Dtarget=x86_64-windows-gnu -Doptimize=ReleaseSafe
 ```
 
-The output is `zig-out/bin/zetris-windows-x86_64.exe`. This target uses baseline x86_64 with the GNU ABI. Zig supplies the toolchain, so a separate MinGW or Windows SDK installation isn't required. raylib is linked statically, and the demo includes its generated assets.
+The output is `zig-out/bin/zetris-x86_64-windows-gnu.exe`. This target uses baseline x86_64 with the GNU ABI. Zig supplies the toolchain, so a separate MinGW installation isn't required.
 
 ### macOS
 
-Build for ARM64 Macs with macOS 13 or later, Zig 0.16's default minimum:
+Build for ARM64 Macs with macOS 13 (Ventura) or later:
 
 ```bash
-zig build -Dtarget=aarch64-macos -Doptimize=ReleaseSafe
+zig build -Dtarget=aarch64-macos-none -Doptimize=ReleaseSafe
 ```
 
-The output is `zig-out/bin/zetris-macos-aarch64`. The target uses baseline ARM64 and runs without Rosetta. The pinned raylib dependency downloads macOS framework headers and link stubs on the first build, allowing cross-compilation from Linux without a local Xcode installation.
+The output is `zig-out/bin/zetris-aarch64-macos-none`. The target uses baseline ARM64 and runs without Rosetta. The pinned raylib dependency downloads macOS framework headers and link stubs on the first build, allowing cross-compilation from Linux without a local Xcode installation.
 
 App bundles, signing, and notarization require additional packaging work. macOS may require approval for an unsigned executable.
 
@@ -58,20 +58,6 @@ libxi-dev
 ```
 
 These packages provide OpenGL and the development libraries for raylib's X11 window backend. If linking fails with `unable to find dynamic system library 'GL'`, check that `libgl1-mesa-dev` is installed.
-
-### Other Targets
-
-`zig build` uses the host OS and architecture by default. Select another target with `-Dtarget`:
-
-```sh
-# x86
-zig build -Dtarget=x86_64-linux -Doptimize=ReleaseSafe
-zig build -Dtarget=x86_64-windows -Doptimize=ReleaseSafe
-
-# ARM
-zig build -Dtarget=aarch64-linux-gnu -Doptimize=ReleaseSafe
-zig build -Dtarget=aarch64-windows-gnu -Doptimize=ReleaseSafe
-```
 
 ## Testing
 
@@ -130,4 +116,4 @@ Zetris uses a 10-column, 20-row playfield, seven-piece bags, SRS wall kicks, a l
 | R | Restart |
 | Escape | Quit |
 
-Losing window focus pauses the game. Press P or click RESUME after returning to resume. The pause and game-over overlays also have a RESTART button. Below the board, the SOUND checkbox toggles sound and the bar sets the master volume. Audio is optional, so the game continues without an audio device and shows SOUND UNAVAILABLE in place of these controls.
+Losing window focus pauses the game. Press <kbd>P</kbd> or click RESUME after returning to resume. The pause and game-over overlays also have a RESTART button. Below the board, the SOUND checkbox toggles sound and the bar sets the master volume. Audio is optional, so the game continues without an audio device and shows SOUND UNAVAILABLE in place of these controls.

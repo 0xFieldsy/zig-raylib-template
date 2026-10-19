@@ -33,9 +33,10 @@ fn addApp(
     const libs = addRaylib(b, target, optimize) orelse return null;
 
     return b.addExecutable(.{
-        .name = b.fmt("zetris-{s}-{s}", .{
-            @tagName(target.result.os.tag),
+        .name = b.fmt("zetris-{s}-{s}-{s}", .{
             @tagName(target.result.cpu.arch),
+            @tagName(target.result.os.tag),
+            @tagName(target.result.abi),
         }),
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),

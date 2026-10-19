@@ -3,13 +3,34 @@
 import os
 from pathlib import Path
 import platform
+import re
 import select
 import subprocess
 import time
 
 
+def native_linux_abi():
+    """Return the ABI Zig selects for a native Linux build."""
+    try:
+        env = subprocess.run(
+            ["zig", "env"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            check=True,
+            timeout=10,
+        ).stdout
+        match = re.search(r'\.target = "[^"]*-linux[^-]*-([A-Za-z0-9]+)', env)
+        if match:
+            return match.group(1)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    libc, _ = platform.libc_ver()
+    return "musl" if libc == "musl" else "gnu"
+
+
 def default_binary():
-    """Locate the native Linux build using Zig's architecture names."""
+    """Locate the native Linux build using Zig's architecture and ABI names."""
     machine = platform.machine().lower()
     arch = {
         "amd64": "x86_64",
@@ -20,7 +41,10 @@ def default_binary():
         "armv7l": "arm",
     }.get(machine, machine)
     return (
-        Path(__file__).resolve().parents[2] / "zig-out" / "bin" / f"zetris-linux-{arch}"
+        Path(__file__).resolve().parents[2]
+        / "zig-out"
+        / "bin"
+        / f"zetris-{arch}-linux-{native_linux_abi()}"
     )
 
 
