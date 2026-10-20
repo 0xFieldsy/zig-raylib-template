@@ -14,6 +14,8 @@
     "zig-pkg/**": true
   },
 
+  "zig.zls.enabled": "on",
+
   "[zig]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit"
