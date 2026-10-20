@@ -12,7 +12,7 @@ cd your-app
 zig build
 ```
 
-On Ubuntu, install the [build dependencies](#ubuntu-dependencies) prior to building. The build downloads raylib as pinned in [build.zig.zon](build.zig.zon); you don't need a separate raylib installation.
+On Ubuntu, install the [build dependencies](#ubuntu) prior to building. The build downloads raylib as pinned in [build.zig.zon](build.zig.zon); you don't need a separate raylib installation.
 
 `zig build` installs the demo executable to `zig-out/bin/zetris-<arch>-<os>-<abi>`. For example, the default build on x86_64 Linux produces `zig-out/bin/zetris-x86_64-linux-gnu`. Architecture, OS, and ABI names follow Zig's target names. macOS has no ABI, so its binaries use `none`.
 

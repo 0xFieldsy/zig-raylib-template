@@ -66,6 +66,31 @@ fn addRaylib(
     const raylib = raylib_dep.module("raylib");
     const raylib_c = raylib_dep.artifact("raylib");
     if (target.result.os.tag == .linux) {
+        // An explicit -Dtarget OS skips Zig's native header/library discovery.
+        // Only use host paths for a matching target without a supplied sysroot.
+        const host = b.graph.host.result;
+        if (!target.query.isNativeOs() and b.sysroot == null and
+            target.result.cpu.arch == host.cpu.arch and
+            target.result.os.tag == host.os.tag and
+            target.result.abi == host.abi)
+        {
+            const paths = std.zig.system.NativePaths.detect(
+                b.allocator,
+                b.graph.io,
+                &host,
+                &b.graph.environ_map,
+            ) catch @panic("unable to detect native search paths");
+            // Keep Zig's target libc headers ahead of the host headers.
+            for (paths.include_dirs.items) |path| {
+                std.Io.Dir.cwd().access(b.graph.io, path, .{}) catch continue;
+                raylib_c.root_module.addAfterIncludePath(.{ .cwd_relative = path });
+            }
+            for (paths.lib_dirs.items) |path| {
+                std.Io.Dir.cwd().access(b.graph.io, path, .{}) catch continue;
+                raylib.addLibraryPath(.{ .cwd_relative = path });
+            }
+        }
+
         // Zig 0.16 can bundle Linux shared libraries into a static C archive.
         // Link them through the Zig module instead, at the final executable step.
         var i: usize = 0;
